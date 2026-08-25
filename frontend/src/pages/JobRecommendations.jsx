@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 // BACKEND URL
 // =====================================================
 
-const BACKEND_URL =
-  "https://fact-clinical-bookstore-encourages.trycloudflare.com";
-  
+const BACKEND_URL = import.meta.env.VITE_API_URL;
+
 const JOBS_PER_PAGE = 20;
 
 // =====================================================

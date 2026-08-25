@@ -1,13 +1,17 @@
 from fastapi import FastAPI
+
 from fastapi.middleware.cors import CORSMiddleware
 
 from google import genai
+
 from google.genai import types
 
 from dotenv import load_dotenv
 
 import os
+
 import re
+
 import time
 
 
@@ -233,6 +237,7 @@ GARBAGE_VALUES = {
 # =========================================================
 
 def clean_text(value):
+
     if value is None:
         return ""
 
@@ -240,10 +245,12 @@ def clean_text(value):
 
 
 def normalize_text(value):
+
     return clean_text(value).lower()
 
 
 def word_count(text):
+
     return len(
         re.findall(
             r"\b[\w+#.-]+\b",
@@ -318,6 +325,57 @@ def valid_url(url):
     )
 
 
+# =========================================================
+# FIXED KEYWORD DETECTION
+# =========================================================
+
+def keyword_pattern(keyword):
+
+    """
+    Creates a safe regex pattern for a technical keyword.
+
+    This prevents substring matching such as:
+
+    java -> javascript
+    c -> c++
+    c -> c#
+    html -> html5
+    react -> react.js
+    """
+
+    keyword = normalize_text(keyword)
+
+    escaped = re.escape(keyword)
+
+    # Keywords containing special characters such as:
+    # c++, c#, .net, react.js, next.js, node.js
+    # need normal non-word boundaries.
+    if any(
+        character in keyword
+        for character in ["+", "#", ".", " "]
+    ):
+        return (
+            r"(?<![a-z0-9])"
+            + escaped
+            + r"(?![a-z0-9])"
+        )
+
+    # Normal words.
+    #
+    # The dot is intentionally included in the blocked
+    # characters so:
+    #
+    # react does NOT independently match react.js
+    # html does NOT independently match html5
+    #
+    # while javascript does NOT match java.
+    return (
+        r"(?<![a-z0-9])"
+        + escaped
+        + r"(?![a-z0-9.#])"
+    )
+
+
 def find_keywords(text):
 
     text = normalize_text(text)
@@ -326,7 +384,13 @@ def find_keywords(text):
 
     for keyword in KNOWN_KEYWORDS:
 
-        if keyword.lower() in text:
+        pattern = keyword_pattern(keyword)
+
+        if re.search(
+            pattern,
+            text,
+            flags=re.IGNORECASE
+        ):
             found.append(keyword)
 
     return found
@@ -448,6 +512,7 @@ def generate_gemini_response(
 ):
 
     if gemini_client is None:
+
         raise RuntimeError(
             "Gemini AI is not configured."
         )
@@ -460,6 +525,7 @@ def generate_gemini_response(
         GEMINI_FALLBACK_MODEL
         and GEMINI_FALLBACK_MODEL != GEMINI_MODEL
     ):
+
         models_to_try.append(
             GEMINI_FALLBACK_MODEL
         )
@@ -473,18 +539,10 @@ def generate_gemini_response(
         try:
 
             response = gemini_client.models.generate_content(
-
                 model=model_name,
-
                 contents=prompt,
-
                 config=types.GenerateContentConfig(
-
                     system_instruction=system_instruction,
-
-                    # Do not use temperature/top_p/top_k
-                    # with current Gemini models.
-
                     max_output_tokens=1200
                 )
             )
@@ -494,6 +552,7 @@ def generate_gemini_response(
             )
 
             if answer:
+
                 return {
                     "answer": answer,
                     "model": model_name
@@ -507,20 +566,15 @@ def generate_gemini_response(
 
             last_error = error
 
-            # If this is the last model,
-            # don't retry anymore.
             if index == len(models_to_try) - 1:
                 break
 
-            # Retry only for temporary failures.
             if is_temporary_gemini_error(error):
 
                 time.sleep(1)
 
                 continue
 
-            # Non-temporary error:
-            # try fallback once anyway.
             continue
 
     raise last_error
@@ -534,24 +588,17 @@ def generate_gemini_response(
 def root():
 
     return {
-
         "success": True,
-
         "message":
             "CareerPilot AI Service is running",
-
         "version":
             "0.5.0",
-
         "ai":
             "Gemini",
-
         "ai_enabled":
             gemini_client is not None,
-
         "model":
             GEMINI_MODEL,
-
         "fallback_model":
             GEMINI_FALLBACK_MODEL
     }
@@ -565,18 +612,13 @@ def root():
 def health():
 
     return {
-
         "success": True,
-
         "status":
             "healthy",
-
         "ai_enabled":
             gemini_client is not None,
-
         "model":
             GEMINI_MODEL,
-
         "fallback_model":
             GEMINI_FALLBACK_MODEL
     }
@@ -665,10 +707,12 @@ def analyze_resume(resume: dict):
             resume_text
         )
 
+        # FIXED KEYWORD DETECTION
         found_keywords = find_keywords(
             resume_text
         )
 
+        # FIXED MISSING KEYWORDS
         missing_keywords = [
             keyword
             for keyword in KNOWN_KEYWORDS
@@ -948,25 +992,15 @@ def analyze_resume(resume: dict):
         # -------------------------------------------------
 
         score = (
-
             personal_score
-
             + location_score
-
             + profile_score
-
             + summary_score
-
             + education_score
-
             + skill_score
-
             + project_score
-
             + experience_score
-
             + certification_score
-
             + keyword_score
         )
 
@@ -1840,9 +1874,7 @@ def career_assistant(data: dict):
         if not message:
 
             return {
-
                 "success": False,
-
                 "message":
                     "Message is required."
             }
@@ -1866,12 +1898,9 @@ def career_assistant(data: dict):
         if gemini_client is None:
 
             return {
-
                 "success": False,
-
                 "message":
                     "Gemini AI is not configured.",
-
                 "error":
                     "Add GEMINI_API_KEY to ai-service/.env and restart the server."
             }
@@ -2003,7 +2032,6 @@ You are not restricted to one programming language.
 
 """
 
-
         # =================================================
         # USER CONTEXT
         # =================================================
@@ -2013,12 +2041,15 @@ You are not restricted to one programming language.
 USER PROFILE
 
 Career Goal:
+
 {goal if goal else "Not specified"}
 
 Experience Level:
+
 {experience if experience else "Not specified"}
 
 Current Skills:
+
 {skills_text if skills_text else "Not specified"}
 
 
@@ -2047,7 +2078,6 @@ If appropriate, include:
 Do not assume Python unless the user actually asks about Python.
 
 """
-
 
         # =================================================
         # GEMINI REQUEST

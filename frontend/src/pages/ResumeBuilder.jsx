@@ -5,8 +5,10 @@ import { supabase } from "../lib/supabase";
 // API CONFIG
 // =========================================================
 
-const BACKEND_URL = "http://127.0.0.1:5000";
-const AI_URL = "http://127.0.0.1:8000";
+const BACKEND_URL = import.meta.env.VITE_API_URL;
+const AI_URL =
+  import.meta.env.VITE_AI_SERVICE_URL ||
+  "http://localhost:8000";
 
 const API_URL = `${BACKEND_URL}/api/resume`;
 const AI_ANALYZE_URL = `${AI_URL}/api/analyze-resume`;
