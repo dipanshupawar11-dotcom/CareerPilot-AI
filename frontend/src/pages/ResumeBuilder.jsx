@@ -266,6 +266,7 @@ function ResumeBuilder() {
             console.log(
               "No resume found in backend."
             );
+
             // Load local backup when backend has no resume.
             const localResume =
               localStorage.getItem(
@@ -1179,16 +1180,16 @@ Data: Power BI, Microsoft Excel`}
               value={formData.projects}
               onChange={handleChange}
               placeholder={`CareerPilot AI
-â€¢ Developed an AI-powered career and resume platform.
-â€¢ Built the frontend using React.js.
-â€¢ Developed REST APIs using FastAPI and Node.js.
-â€¢ Integrated Supabase for database management.
-â€¢ Implemented ATS resume analysis.
+• Developed an AI-powered career and resume platform.
+• Built the frontend using React.js.
+• Developed REST APIs using FastAPI and Node.js.
+• Integrated Supabase for database management.
+• Implemented ATS resume analysis.
 
 Weather AI Agent
-â€¢ Developed an AI-powered weather forecasting application.
-â€¢ Integrated Open-Meteo API for real-time weather data.
-â€¢ Added AI assistant functionality.`}
+• Developed an AI-powered weather forecasting application.
+• Integrated Open-Meteo API for real-time weather data.
+• Added AI assistant functionality.`}
               rows="12"
             />
 
@@ -1209,9 +1210,9 @@ Weather AI Agent
               value={formData.experience}
               onChange={handleChange}
               placeholder={`Internship / Company Name | Role | Duration
-â€¢ Developed web applications using React.js and Python.
-â€¢ Worked with REST APIs and databases.
-â€¢ Implemented features and fixed application issues.`}
+• Developed web applications using React.js and Python.
+• Worked with REST APIs and databases.
+• Implemented features and fixed application issues.`}
               rows="9"
             />
 
@@ -1269,7 +1270,7 @@ Web Development Certification`}
             >
               {analyzing
                 ? "Analyzing..."
-                : "ðŸ¤– Analyze Resume"}
+                : "🤖 Analyze Resume"}
             </button>
 
             <button
@@ -1296,7 +1297,7 @@ Web Development Certification`}
             >
               {clearing
                 ? "Clearing..."
-                : "ðŸ—‘ï¸ Clear Resume"}
+                : "🗑️ Clear Resume"}
             </button>
 
           </div>
@@ -1307,7 +1308,7 @@ Web Development Certification`}
 
           {saved && (
             <div className="success-message">
-              âœ… Resume saved successfully!
+              ✅ Resume saved successfully!
             </div>
           )}
 
@@ -1330,7 +1331,7 @@ Web Development Certification`}
             <div className="ai-analysis-card">
 
               <h2>
-                ðŸ¤– AI Resume Analysis
+                🤖 AI Resume Analysis
               </h2>
 
               <div className="analysis-score">
@@ -1429,7 +1430,7 @@ Web Development Certification`}
 
                 ) : (
                   <p>
-                    ðŸŽ‰ No major keywords are missing.
+                    🎉 No major keywords are missing.
                   </p>
                 )}
 
@@ -1462,7 +1463,7 @@ Web Development Certification`}
 
                 ) : (
                   <p>
-                    ðŸŽ‰ Your resume looks good!
+                    🎉 Your resume looks good!
                   </p>
                 )}
 
@@ -1482,64 +1483,64 @@ Web Development Certification`}
                     Personal Information:{" "}
                     {analysis.sections
                       ?.personal_information
-                      ? "âœ… Complete"
-                      : "âŒ Missing"}
+                      ? "✅ Complete"
+                      : "❌ Missing"}
                   </li>
 
                   <li>
                     Online Profiles:{" "}
                     {analysis.sections
                       ?.online_profiles
-                      ? "âœ… Added"
-                      : "âŒ Missing"}
+                      ? "✅ Added"
+                      : "❌ Missing"}
                   </li>
 
                   <li>
                     Professional Summary:{" "}
                     {analysis.sections
                       ?.summary
-                      ? "âœ… Added"
-                      : "âŒ Missing"}
+                      ? "✅ Added"
+                      : "❌ Missing"}
                   </li>
 
                   <li>
                     Education:{" "}
                     {analysis.sections
                       ?.education
-                      ? "âœ… Added"
-                      : "âŒ Missing"}
+                      ? "✅ Added"
+                      : "❌ Missing"}
                   </li>
 
                   <li>
                     Technical Skills:{" "}
                     {analysis.sections
                       ?.skills
-                      ? "âœ… Added"
-                      : "âŒ Missing"}
+                      ? "✅ Added"
+                      : "❌ Missing"}
                   </li>
 
                   <li>
                     Projects:{" "}
                     {analysis.sections
                       ?.projects
-                      ? "âœ… Added"
-                      : "âŒ Missing"}
+                      ? "✅ Added"
+                      : "❌ Missing"}
                   </li>
 
                   <li>
                     Experience:{" "}
                     {analysis.sections
                       ?.experience
-                      ? "âœ… Added"
-                      : "âŒ Missing"}
+                      ? "✅ Added"
+                      : "❌ Missing"}
                   </li>
 
                   <li>
                     Certifications:{" "}
                     {analysis.sections
                       ?.certifications
-                      ? "âœ… Added"
-                      : "âŒ Missing"}
+                      ? "✅ Added"
+                      : "❌ Missing"}
                   </li>
 
                 </ul>
