@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
 
-const AI_URL = "http://127.0.0.1:8000";
+const AI_URL = (
+  import.meta.env.VITE_AI_SERVICE_URL
+).replace(/\/+$/, "");
+
 const CHAT_URL = `${AI_URL}/api/career-assistant`;
 
 const STORAGE_KEY = "careerpilot_ai_chat";
