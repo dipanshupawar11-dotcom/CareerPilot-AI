@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 // =========================================================
@@ -266,17 +266,50 @@ function ResumeBuilder() {
             console.log(
               "No resume found in backend."
             );
+            // Load local backup when backend has no resume.
+            const localResume =
+              localStorage.getItem(
+                STORAGE_KEY
+              );
 
-            // IMPORTANT:
-            // If backend has no resume, clear stale local
-            // resume instead of resurrecting old data.
-            localStorage.removeItem(
-              STORAGE_KEY
-            );
+            if (localResume) {
+              try {
+                const parsedResume =
+                  JSON.parse(
+                    localResume
+                  );
 
-            setFormData(
-              initialFormData
-            );
+                const localData = {
+                  ...initialFormData,
+                  ...parsedResume,
+                };
+
+                setFormData(
+                  localData
+                );
+
+                console.log(
+                  "No backend resume. Loaded local backup."
+                );
+              } catch (localError) {
+                console.error(
+                  "Local resume parse error:",
+                  localError
+                );
+
+                localStorage.removeItem(
+                  STORAGE_KEY
+                );
+
+                setFormData(
+                  initialFormData
+                );
+              }
+            } else {
+              setFormData(
+                initialFormData
+              );
+            }
 
             return;
           }
@@ -1146,16 +1179,16 @@ Data: Power BI, Microsoft Excel`}
               value={formData.projects}
               onChange={handleChange}
               placeholder={`CareerPilot AI
-• Developed an AI-powered career and resume platform.
-• Built the frontend using React.js.
-• Developed REST APIs using FastAPI and Node.js.
-• Integrated Supabase for database management.
-• Implemented ATS resume analysis.
+â€¢ Developed an AI-powered career and resume platform.
+â€¢ Built the frontend using React.js.
+â€¢ Developed REST APIs using FastAPI and Node.js.
+â€¢ Integrated Supabase for database management.
+â€¢ Implemented ATS resume analysis.
 
 Weather AI Agent
-• Developed an AI-powered weather forecasting application.
-• Integrated Open-Meteo API for real-time weather data.
-• Added AI assistant functionality.`}
+â€¢ Developed an AI-powered weather forecasting application.
+â€¢ Integrated Open-Meteo API for real-time weather data.
+â€¢ Added AI assistant functionality.`}
               rows="12"
             />
 
@@ -1176,9 +1209,9 @@ Weather AI Agent
               value={formData.experience}
               onChange={handleChange}
               placeholder={`Internship / Company Name | Role | Duration
-• Developed web applications using React.js and Python.
-• Worked with REST APIs and databases.
-• Implemented features and fixed application issues.`}
+â€¢ Developed web applications using React.js and Python.
+â€¢ Worked with REST APIs and databases.
+â€¢ Implemented features and fixed application issues.`}
               rows="9"
             />
 
@@ -1236,7 +1269,7 @@ Web Development Certification`}
             >
               {analyzing
                 ? "Analyzing..."
-                : "🤖 Analyze Resume"}
+                : "ðŸ¤– Analyze Resume"}
             </button>
 
             <button
@@ -1263,7 +1296,7 @@ Web Development Certification`}
             >
               {clearing
                 ? "Clearing..."
-                : "🗑️ Clear Resume"}
+                : "ðŸ—‘ï¸ Clear Resume"}
             </button>
 
           </div>
@@ -1274,7 +1307,7 @@ Web Development Certification`}
 
           {saved && (
             <div className="success-message">
-              ✅ Resume saved successfully!
+              âœ… Resume saved successfully!
             </div>
           )}
 
@@ -1297,7 +1330,7 @@ Web Development Certification`}
             <div className="ai-analysis-card">
 
               <h2>
-                🤖 AI Resume Analysis
+                ðŸ¤– AI Resume Analysis
               </h2>
 
               <div className="analysis-score">
@@ -1396,7 +1429,7 @@ Web Development Certification`}
 
                 ) : (
                   <p>
-                    🎉 No major keywords are missing.
+                    ðŸŽ‰ No major keywords are missing.
                   </p>
                 )}
 
@@ -1429,7 +1462,7 @@ Web Development Certification`}
 
                 ) : (
                   <p>
-                    🎉 Your resume looks good!
+                    ðŸŽ‰ Your resume looks good!
                   </p>
                 )}
 
@@ -1449,64 +1482,64 @@ Web Development Certification`}
                     Personal Information:{" "}
                     {analysis.sections
                       ?.personal_information
-                      ? "✅ Complete"
-                      : "❌ Missing"}
+                      ? "âœ… Complete"
+                      : "âŒ Missing"}
                   </li>
 
                   <li>
                     Online Profiles:{" "}
                     {analysis.sections
                       ?.online_profiles
-                      ? "✅ Added"
-                      : "❌ Missing"}
+                      ? "âœ… Added"
+                      : "âŒ Missing"}
                   </li>
 
                   <li>
                     Professional Summary:{" "}
                     {analysis.sections
                       ?.summary
-                      ? "✅ Added"
-                      : "❌ Missing"}
+                      ? "âœ… Added"
+                      : "âŒ Missing"}
                   </li>
 
                   <li>
                     Education:{" "}
                     {analysis.sections
                       ?.education
-                      ? "✅ Added"
-                      : "❌ Missing"}
+                      ? "âœ… Added"
+                      : "âŒ Missing"}
                   </li>
 
                   <li>
                     Technical Skills:{" "}
                     {analysis.sections
                       ?.skills
-                      ? "✅ Added"
-                      : "❌ Missing"}
+                      ? "âœ… Added"
+                      : "âŒ Missing"}
                   </li>
 
                   <li>
                     Projects:{" "}
                     {analysis.sections
                       ?.projects
-                      ? "✅ Added"
-                      : "❌ Missing"}
+                      ? "âœ… Added"
+                      : "âŒ Missing"}
                   </li>
 
                   <li>
                     Experience:{" "}
                     {analysis.sections
                       ?.experience
-                      ? "✅ Added"
-                      : "❌ Missing"}
+                      ? "âœ… Added"
+                      : "âŒ Missing"}
                   </li>
 
                   <li>
                     Certifications:{" "}
                     {analysis.sections
                       ?.certifications
-                      ? "✅ Added"
-                      : "❌ Missing"}
+                      ? "âœ… Added"
+                      : "âŒ Missing"}
                   </li>
 
                 </ul>
