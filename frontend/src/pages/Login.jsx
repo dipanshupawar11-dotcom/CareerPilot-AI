@@ -166,7 +166,7 @@ function Login() {
           email,
           {
             redirectTo:
-              `${window.location.origin}/reset-password`,
+              `https://merry-nougat-be4ddc.netlify.app/reset-password`,
           }
         );
 
