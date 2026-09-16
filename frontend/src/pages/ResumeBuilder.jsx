@@ -6,12 +6,15 @@ import { supabase } from "../lib/supabase";
 // =========================================================
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
+
 const AI_URL =
   import.meta.env.VITE_AI_SERVICE_URL ||
   "http://localhost:8000";
 
 const API_URL = `${BACKEND_URL}/api/resume`;
-const AI_ANALYZE_URL = `${AI_URL}/api/analyze-resume`;
+
+const AI_ANALYZE_URL =
+  `${AI_URL}/api/analyze-resume`;
 
 const STORAGE_KEY = "careerpilot_resume";
 
@@ -127,6 +130,7 @@ function ResumeBuilder() {
       }
 
       return data.user;
+
     } catch (error) {
       console.error(
         "Get Current User Error:",
@@ -138,27 +142,56 @@ function ResumeBuilder() {
   };
 
   // =========================================================
+  // GET ACCESS TOKEN
+  // =========================================================
+
+  const getAccessToken = async () => {
+    try {
+      const {
+        data,
+        error,
+      } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error(
+          "Get Session Error:",
+          error
+        );
+
+        return null;
+      }
+
+      return (
+        data?.session?.access_token ||
+        null
+      );
+
+    } catch (error) {
+      console.error(
+        "Access Token Error:",
+        error
+      );
+
+      return null;
+    }
+  };
+
+  // =========================================================
   // LOAD RESUME
-  //
-  // IMPORTANT:
-  // Backend is the source of truth.
-  // LocalStorage is only used as backup when backend
-  // doesn't have a resume.
   // =========================================================
 
   useEffect(() => {
     const loadResume = async () => {
-      let user = null;
-
       try {
         setLoading(true);
         setError("");
 
         // =====================================================
-        // STEP 1: USER
+        // STEP 1: GET USER
         // =====================================================
 
-        user = await getCurrentUser();
+        const user =
+          await getCurrentUser();
 
         if (!user?.id) {
           console.warn(
@@ -176,7 +209,9 @@ function ResumeBuilder() {
           return;
         }
 
-        setCurrentUserId(user.id);
+        setCurrentUserId(
+          user.id
+        );
 
         console.log(
           "Current user:",
@@ -184,7 +219,27 @@ function ResumeBuilder() {
         );
 
         // =====================================================
-        // STEP 2: BACKEND FIRST
+        // STEP 2: GET ACCESS TOKEN
+        // =====================================================
+
+        const accessToken =
+          await getAccessToken();
+
+        console.log(
+          "LOAD - ACCESS TOKEN EXISTS:",
+          !!accessToken
+        );
+
+        if (!accessToken) {
+          setError(
+            "Authentication session expired. Please login again."
+          );
+
+          return;
+        }
+
+        // =====================================================
+        // STEP 3: GET RESUME FROM BACKEND
         // =====================================================
 
         const resumeUrl =
@@ -199,13 +254,20 @@ function ResumeBuilder() {
 
         try {
           const response =
-            await fetch(resumeUrl, {
-              method: "GET",
-              headers: {
-                Accept:
-                  "application/json",
-              },
-            });
+            await fetch(
+              resumeUrl,
+              {
+                method: "GET",
+
+                headers: {
+                  Accept:
+                    "application/json",
+
+                  Authorization:
+                    `Bearer ${accessToken}`,
+                },
+              }
+            );
 
           let result = null;
 
@@ -222,14 +284,16 @@ function ResumeBuilder() {
           );
 
           // ===================================================
-          // RESUME EXISTS IN BACKEND
+          // RESUME EXISTS
           // ===================================================
 
           if (
             response.ok &&
             result?.success &&
             result?.data &&
-            !isResumeEmpty(result.data)
+            !isResumeEmpty(
+              result.data
+            )
           ) {
             const backendResume = {
               ...initialFormData,
@@ -255,19 +319,20 @@ function ResumeBuilder() {
           }
 
           // ===================================================
-          // BACKEND SAYS NO RESUME
+          // NO RESUME
           // ===================================================
 
           if (
             response.status === 404 ||
             !result?.data ||
-            isResumeEmpty(result?.data)
+            isResumeEmpty(
+              result?.data
+            )
           ) {
             console.log(
               "No resume found in backend."
             );
 
-            // Load local backup when backend has no resume.
             const localResume =
               localStorage.getItem(
                 STORAGE_KEY
@@ -290,8 +355,9 @@ function ResumeBuilder() {
                 );
 
                 console.log(
-                  "No backend resume. Loaded local backup."
+                  "Loaded local resume backup."
                 );
+
               } catch (localError) {
                 console.error(
                   "Local resume parse error:",
@@ -306,6 +372,7 @@ function ResumeBuilder() {
                   initialFormData
                 );
               }
+
             } else {
               setFormData(
                 initialFormData
@@ -331,8 +398,7 @@ function ResumeBuilder() {
           );
 
           // ===================================================
-          // FALLBACK TO LOCAL STORAGE ONLY WHEN BACKEND
-          // IS ACTUALLY UNAVAILABLE
+          // LOCAL STORAGE FALLBACK
           // ===================================================
 
           const localResume =
@@ -359,6 +425,7 @@ function ResumeBuilder() {
               console.log(
                 "Backend unavailable. Loaded local backup."
               );
+
             } catch (localError) {
               console.error(
                 "Local resume parse error:",
@@ -373,6 +440,7 @@ function ResumeBuilder() {
                 initialFormData
               );
             }
+
           } else {
             setFormData(
               initialFormData
@@ -393,6 +461,7 @@ function ResumeBuilder() {
         setFormData(
           initialFormData
         );
+
       } finally {
         setLoading(false);
       }
@@ -411,10 +480,12 @@ function ResumeBuilder() {
       value,
     } = e.target;
 
-    setFormData((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
+    setFormData(
+      (previous) => ({
+        ...previous,
+        [name]: value,
+      })
+    );
 
     setSaved(false);
     setError("");
@@ -451,6 +522,31 @@ function ResumeBuilder() {
       setCurrentUserId(
         user.id
       );
+
+      console.log(
+        "SAVE - USER ID:",
+        user.id
+      );
+
+      // =====================================================
+      // GET ACCESS TOKEN
+      // =====================================================
+
+      const accessToken =
+        await getAccessToken();
+
+      console.log(
+        "SAVE - ACCESS TOKEN EXISTS:",
+        !!accessToken
+      );
+
+      if (!accessToken) {
+        setError(
+          "Authentication session expired. Please login again."
+        );
+
+        return;
+      }
 
       // =====================================================
       // PREPARE DATA
@@ -505,25 +601,31 @@ function ResumeBuilder() {
       );
 
       // =====================================================
-      // SAVE BACKEND
+      // SAVE TO BACKEND
       // =====================================================
 
       const response =
-        await fetch(API_URL, {
-          method: "POST",
+        await fetch(
+          API_URL,
+          {
+            method: "POST",
 
-          headers: {
-            "Content-Type":
-              "application/json",
+            headers: {
+              "Content-Type":
+                "application/json",
 
-            Accept:
-              "application/json",
-          },
+              Accept:
+                "application/json",
 
-          body: JSON.stringify(
-            resumePayload
-          ),
-        });
+              Authorization:
+                `Bearer ${accessToken}`,
+            },
+
+            body: JSON.stringify(
+              resumePayload
+            ),
+          }
+        );
 
       let result = null;
 
@@ -535,9 +637,18 @@ function ResumeBuilder() {
       }
 
       console.log(
+        "SAVE - HTTP STATUS:",
+        response.status
+      );
+
+      console.log(
         "Save response:",
         result
       );
+
+      // =====================================================
+      // BACKEND ERROR
+      // =====================================================
 
       if (!response.ok) {
         throw new Error(
@@ -560,6 +671,7 @@ function ResumeBuilder() {
 
       const savedResume = {
         ...initialFormData,
+
         ...(result?.data ||
           resumePayload),
       };
@@ -580,6 +692,7 @@ function ResumeBuilder() {
       );
 
       setSaved(true);
+      setError("");
 
       console.log(
         "================================="
@@ -605,7 +718,7 @@ function ResumeBuilder() {
       );
 
       // =====================================================
-      // LOCAL BACKUP ONLY
+      // LOCAL BACKUP
       // =====================================================
 
       localStorage.setItem(
@@ -722,8 +835,6 @@ function ResumeBuilder() {
 
   // =========================================================
   // CLEAR RESUME
-  //
-  // THIS IS THE IMPORTANT FIX
   // =========================================================
 
   const clearResume = async () => {
@@ -749,7 +860,6 @@ function ResumeBuilder() {
         await getCurrentUser();
 
       if (!user?.id) {
-        // Even without user, clear local data.
         localStorage.removeItem(
           STORAGE_KEY
         );
@@ -767,14 +877,28 @@ function ResumeBuilder() {
         user.id
       );
 
+      // =====================================================
+      // GET ACCESS TOKEN
+      // =====================================================
+
+      const accessToken =
+        await getAccessToken();
+
       console.log(
-        "Deleting resume for user:",
-        user.id
+        "DELETE - ACCESS TOKEN EXISTS:",
+        !!accessToken
       );
 
+      if (!accessToken) {
+        setError(
+          "Authentication session expired. Please login again."
+        );
+
+        return;
+      }
+
       // =====================================================
-      // STEP 1
-      // DELETE FROM BACKEND / SUPABASE
+      // DELETE FROM BACKEND
       // =====================================================
 
       try {
@@ -792,6 +916,9 @@ function ResumeBuilder() {
               headers: {
                 Accept:
                   "application/json",
+
+                Authorization:
+                  `Bearer ${accessToken}`,
               },
             }
           );
@@ -830,7 +957,6 @@ function ResumeBuilder() {
       }
 
       // =====================================================
-      // STEP 2
       // DELETE LOCAL STORAGE
       // =====================================================
 
@@ -839,8 +965,7 @@ function ResumeBuilder() {
       );
 
       // =====================================================
-      // STEP 3
-      // RESET REACT STATE
+      // RESET STATE
       // =====================================================
 
       setFormData(
@@ -864,7 +989,6 @@ function ResumeBuilder() {
         err
       );
 
-      // Still clear local data.
       localStorage.removeItem(
         STORAGE_KEY
       );
@@ -1277,14 +1401,12 @@ Web Development Certification`}
               type="button"
               className="secondary-button"
               onClick={printResume}
-              disabled={clearing}
+              disabled={
+                clearing
+              }
             >
               Download / Print PDF
             </button>
-
-            {/* =================================================
-                IMPORTANT CLEAR BUTTON
-            ================================================= */}
 
             <button
               type="button"
@@ -1548,7 +1670,6 @@ Web Development Certification`}
               </div>
 
             </div>
-
           )}
 
         </form>
