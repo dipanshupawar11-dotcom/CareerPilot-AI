@@ -464,8 +464,30 @@ function CareerRoadmap() {
           url
         );
 
-        const response =
-          await fetch(url);
+        const { data: sessionData, error: sessionError } =
+  await supabase.auth.getSession();
+
+if (sessionError) {
+  throw sessionError;
+}
+
+const accessToken =
+  sessionData?.session?.access_token;
+
+if (!accessToken) {
+  throw new Error("Authorization token missing");
+}
+
+console.log(
+  "CareerRoadmap - ACCESS TOKEN EXISTS:",
+  !!accessToken
+);
+
+const response = await fetch(url, {
+  headers: {
+    Authorization: `Bearer ${accessToken}`,
+  },
+});
 
         const contentType =
           response.headers.get(
@@ -4299,3 +4321,4 @@ class User(BaseModel):
 }
 
 export default CareerRoadmap;
+
